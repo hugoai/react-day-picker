@@ -130,7 +130,7 @@ export default class DayPickerInput extends React.Component {
     dayPickerProps: {},
     value: '',
     placeholder: 'YYYY-M-D',
-    format: 'L',
+    format: 'YYYY-M-D',
     formatDate: defaultFormat,
     parseDate: defaultParse,
     showOverlay: false,
@@ -474,7 +474,7 @@ export default class DayPickerInput extends React.Component {
     const { value } = this.state;
     let day;
     if (value) {
-      day = moment(value, 'L').subtract(7, 'days').toDate();
+      day = moment(value, 'YYYY-M-D').subtract(7, 'days').toDate();
     } else {
       day = moment().subtract(7, 'days').toDate();
     }
@@ -491,7 +491,7 @@ export default class DayPickerInput extends React.Component {
     const { value } = this.state;
     let day;
     if (value) {
-      day = moment(value, 'L').add(7, 'days').toDate();
+      day = moment(value, 'YYYY-M-D').add(7, 'days').toDate();
     } else {
       day = moment().add(7, 'days').toDate();
     }
