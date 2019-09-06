@@ -472,7 +472,7 @@ export default class DayPickerInput extends React.Component {
   handlePreviousWeek() {
     const { dayPickerProps, formatDate, format } = this.props;
     const { value } = this.state;
-    const day = moment(value || new Date().toISOString()).subtract(7, 'days').toDate();
+    const day = moment(value || new Date()).subtract(7, 'days').toDate();
     const newValue = formatDate(day, format, dayPickerProps.locale);
     if (dayPickerProps.onDayClick) {
       dayPickerProps.onDayClick(day);
@@ -484,7 +484,8 @@ export default class DayPickerInput extends React.Component {
   handleNextWeek() {
     const { dayPickerProps, formatDate, format } = this.props;
     const { value } = this.state;
-    const day = moment(value || new Date().toISOString()).add(7, 'days').toDate();
+    console.log(value);
+    const day = moment(value || new Date()).add(7, 'days').toDate();
     const newValue = formatDate(day, format, dayPickerProps.locale);
     if (dayPickerProps.onDayClick) {
       dayPickerProps.onDayClick(day);
@@ -495,7 +496,7 @@ export default class DayPickerInput extends React.Component {
 
   handleSnapWeek() {
     const { dayPickerProps, formatDate, format } = this.props;
-    const day = moment(new Date().toISOString()).toDate();
+    const day = moment(new Date()).toDate();
     const newValue = formatDate(day, format, dayPickerProps.locale);
     if (dayPickerProps.onDayClick) {
       dayPickerProps.onDayClick(day);
