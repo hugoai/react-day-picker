@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
+import ReactDOM from 'react-dom';
+import moment from 'moment';
 import DayPicker from './DayPicker';
 import { isSameMonth, isDate } from './DateUtils';
 import { getModifiersForDay } from './ModifiersUtils';
@@ -175,6 +176,10 @@ export default class DayPickerInput extends React.Component {
     this.handleMonthChange = this.handleMonthChange.bind(this);
     this.handleOverlayFocus = this.handleOverlayFocus.bind(this);
     this.handleOverlayBlur = this.handleOverlayBlur.bind(this);
+
+    this.handlePreviousWeek = this.handlePreviousWeek.bind(this);
+    this.handleNextWeek = this.handleNextWeek.bind(this);
+    this.handleSnapWeek = this.handleSnapWeek.bind(this);
   }
 
   componentDidUpdate(prevProps) {
@@ -338,7 +343,11 @@ export default class DayPickerInput extends React.Component {
   }
 
   handleInputClick(e) {
-    this.showDayPicker();
+    if (this.state.showOverlay === false) {
+      this.showDayPicker();
+    } else {
+      this.hideDayPicker();
+    }
     if (this.props.inputProps.onClick) {
       e.persist();
       this.props.inputProps.onClick(e);
@@ -460,6 +469,41 @@ export default class DayPickerInput extends React.Component {
     });
   }
 
+  handlePreviousWeek() {
+    const { dayPickerProps, formatDate, format } = this.props;
+    const { value } = this.state;
+    const day = moment(value || new Date().toISOString()).subtract(7, 'days').toDate();
+    const newValue = formatDate(day, format, dayPickerProps.locale);
+    if (dayPickerProps.onDayClick) {
+      dayPickerProps.onDayClick(day);
+    }
+    this.setState({ value: newValue, typedValue: undefined, month: day }, () => {
+    });
+  }
+
+  handleNextWeek() {
+    const { dayPickerProps, formatDate, format } = this.props;
+    const { value } = this.state;
+    const day = moment(value || new Date().toISOString()).add(7, 'days').toDate();
+    const newValue = formatDate(day, format, dayPickerProps.locale);
+    if (dayPickerProps.onDayClick) {
+      dayPickerProps.onDayClick(day);
+    }
+    this.setState({ value: newValue, typedValue: undefined, month: day }, () => {
+    });
+  }
+
+  handleSnapWeek() {
+    const { dayPickerProps, formatDate, format } = this.props;
+    const day = moment(new Date().toISOString()).toDate();
+    const newValue = formatDate(day, format, dayPickerProps.locale);
+    if (dayPickerProps.onDayClick) {
+      dayPickerProps.onDayClick(day);
+    }
+    this.setState({ value: newValue, typedValue: undefined, month: day }, () => {
+    });
+  }
+
   handleDayClick(day, modifiers, e) {
     const {
       clickUnselectsDay,
@@ -467,6 +511,7 @@ export default class DayPickerInput extends React.Component {
       onDayChange,
       formatDate,
       format,
+      formatValue
     } = this.props;
     if (dayPickerProps.onDayClick) {
       dayPickerProps.onDayClick(day, modifiers, e);
@@ -541,8 +586,17 @@ export default class DayPickerInput extends React.Component {
         );
     }
     const Overlay = this.props.overlayComponent;
-    return (
-      <Overlay
+    if (!this.input) {
+      return null;
+    }
+    const { top, left, width, height } = this.input.getBoundingClientRect();
+    const style = { top: top + window.scrollY + height + 2, left: left + window.scrollX + width/2 - 13, width, height };
+
+    return ReactDOM.createPortal(
+      <div
+      >
+          <Overlay
+        style={style}
         classNames={classNames}
         month={this.state.month}
         selectedDay={selectedDay}
@@ -561,26 +615,34 @@ export default class DayPickerInput extends React.Component {
           onMonthChange={this.handleMonthChange}
         />
       </Overlay>
-    );
+      </div>,
+      document.getElementById('portal-root')
+  );
   }
 
   render() {
     const Input = this.props.component;
-    const { inputProps } = this.props;
+    const { inputProps, formatValue, leftIcon, rightIcon, snapIcon } = this.props;
+    const { showOverlay } = this.state;
+
     return (
       <div className={this.props.classNames.container} style={this.props.style}>
-        <Input
+        {leftIcon({onClick:this.handlePreviousWeek})}
+        <input
+          className={`DayPickerInputElement ${showOverlay?'DayPickerSelectedInput':''}`}
           ref={el => (this.input = el)}
-          placeholder={this.props.placeholder}
           {...inputProps}
-          value={this.state.typedValue || this.state.value}
+          style={{width: ((formatValue(this.state.value).length + 1) * 8)}}
+          value={formatValue(this.state.value)}
           onChange={this.handleInputChange}
           onFocus={this.handleInputFocus}
           onBlur={this.handleInputBlur}
           onKeyDown={this.handleInputKeyDown}
           onKeyUp={this.handleInputKeyUp}
-          onClick={!inputProps.disabled ? this.handleInputClick : undefined}
+          onMouseDown={!inputProps.disabled ? this.handleInputClick : undefined}
         />
+         {rightIcon({onClick:this.handleNextWeek})}
+         {snapIcon({onClick:this.handleSnapWeek})}
         {this.state.showOverlay && this.renderOverlay()}
       </div>
     );
