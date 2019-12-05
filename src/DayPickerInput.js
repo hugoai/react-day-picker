@@ -642,7 +642,7 @@ export default class DayPickerInput extends React.Component {
           className={`DayPickerInputElement ${showOverlay?'DayPickerSelectedInput':''}`}
           ref={el => (this.input = el)}
           {...inputProps}
-          style={{width: ((formatValue(this.state.value).length + 1) * 8)}}
+          style={{width: ((formatValue(this.state.value).length) * 8)}}
           value={formatValue(this.state.value)}
           onChange={this.handleInputChange}
           onFocus={this.handleInputFocus}
